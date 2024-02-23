@@ -2,8 +2,9 @@ from models.PokemonDamageRelation import PokemonDamageRelation
 from models.PokemonByType import PokemonByType
 
 class Pokemon:
-    def __init__(self,damage_relations,pokemons):
+    def __init__(self,damage_relations,type_name,pokemons):
         self.damage_relations = self.set_damage_relations(damage_relations)
+        self.type_name = type_name
         self.pokemons = self.set_pokemon(pokemons)
 
     def set_damage_relations(self,damage_relations):
