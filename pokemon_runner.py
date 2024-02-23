@@ -158,7 +158,6 @@ def main():
     create_weather_boost_by_type_table_schema()
     create_damage_relations_by_type_table_schema()
     metadata_obj.create_all(engine)
-    print(metadata_obj.tables)
 
 
 
