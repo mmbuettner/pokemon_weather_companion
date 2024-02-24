@@ -1,13 +1,16 @@
 """
     Notes to work on tomorrow:
-        - Figure out a way to clean up gather_all_damage_relations()
-        function by creating an agnostic helper function
         - Figure out a way to only add _NEW_ entries and not duplicate
         entries without necessarily having a unique key
         - General clean up with Enviroment object and check imports
 """
 
-from helper_functions import api_request, insert_rows_to_table
+from helper_functions import (
+    api_request, 
+    select_all_from_table,
+    check_and_insert_rows,
+    compare_dataframes
+)
 from models.PokemonType import PokemonType
 from models.Pokemon import Pokemon
 from Enviroment import Enviroment
@@ -16,8 +19,10 @@ from sqlalchemy import (
     Table,
     Column,
     String,
-    Integer
+    PrimaryKeyConstraint
 )
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 
 env = Enviroment()
@@ -46,8 +51,8 @@ def gather_all_pokemon_related_to_type(pokemon_type):
         pokemon_info = load_pokemon_by_type_data(type.type_url)
         for pokemon in pokemon_info.pokemons:
             pokemon_by_type_dict = {
-                "Type" : type.type_name,
-                "Pokemon" : pokemon.pokemon.pokemon_name
+                'pokemon' : pokemon.pokemon.pokemon_name,
+                'type' : type.type_name
             }
             pokemon_by_types_list.append(pokemon_by_type_dict)
     return pokemon_by_types_list
@@ -82,8 +87,8 @@ def gather_all_weather_boosts_by_type(pokemon_type):
     for type in pokemon_type.type_results:
         weather_condition = get_weather_condition(type.type_name)
         weather_boost_by_type_dict = {
-            "Weather_Condition" : weather_condition,
-            "Type" : type.type_name
+            'weather_condition' : weather_condition,
+            'type' : type.type_name
         }
         weather_boost_by_type_list.append(weather_boost_by_type_dict)
     return weather_boost_by_type_list
@@ -93,9 +98,9 @@ def add_damage_relations(damage_relations_list, damage_type, type_name, relation
     for damage_relation in damage_type:
         to_type = damage_relation.name
         damage_relations_by_type_dict = {
-            "Damage_Relation" : relation_type,
-            "Type" : type_name,
-            "Opponent" : to_type
+            'damage_relation' : relation_type,
+            'type' : type_name,
+            'opponent' : to_type
         }
         damage_relations_list.append(damage_relations_by_type_dict)
 
@@ -104,48 +109,48 @@ def gather_all_damage_relations(pokemon_type):
     damage_relations_by_type_list = []
     for type in pokemon_type.type_results:
         pokemon_info = load_pokemon_by_type_data(type.type_url)
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_to, type.type_name, "double_damage_to")
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_to, type.type_name, "half_damage_to")
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_to, type.type_name, "no_damage_to")
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_from, type.type_name, "double_damage_from")
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_from, type.type_name, "half_damage_from")
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_from, type.type_name, "no_damage_from")
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_to, type.type_name, 'double_damage_to')
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_to, type.type_name, 'half_damage_to')
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_to, type.type_name, 'no_damage_to')
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_from, type.type_name, 'double_damage_from')
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_from, type.type_name, 'half_damage_from')
+        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_from, type.type_name, 'no_damage_from')
     return damage_relations_by_type_list
 
 
 def create_pokemon_by_type_table_schema():
-    pokemon_by_type_table_name = "pokemon_by_type"
+    pokemon_by_type_table_name = 'pokemon_by_type'
     pokemon_by_type = Table(
         pokemon_by_type_table_name,
         env.metadata_obj,
-        Column("Id", Integer, primary_key=True, nullable=False),
-        Column("Type", String),
-        Column("Pokemon", String)
+        Column('pokemon', String),
+        Column('type', String),
+        PrimaryKeyConstraint('pokemon','type')
     )
     return pokemon_by_type
 
 
 def create_weather_boost_by_type_table_schema():
-    weather_boost_by_type_table_name = "weather_boost_by_type"
+    weather_boost_by_type_table_name = 'weather_boost_by_type'
     weather_boost_by_type = Table(
         weather_boost_by_type_table_name,
         env.metadata_obj,
-        Column("Id", Integer, primary_key=True, nullable=False),
-        Column("Weather_Condition", String),
-        Column("Type", String)
+        Column('weather_condition', String),
+        Column('type', String),
+        PrimaryKeyConstraint('weather_condition','type')
     )
     return weather_boost_by_type
 
 
 def create_damage_relations_by_type_table_schema():
-    damage_relations_by_type_table_name = "damage_relations_by_type"
+    damage_relations_by_type_table_name = 'damage_relations_by_type'
     damage_relations_by_type = Table(
         damage_relations_by_type_table_name,
         env.metadata_obj,
-        Column("Id", Integer, primary_key=True, nullable=False),
-        Column("Damage_Relation", String),
-        Column("Type", String),
-        Column("Opponent", String)
+        Column('damage_relation', String),
+        Column('type', String),
+        Column('opponent', String),
+        PrimaryKeyConstraint('damage_relation','type','opponent')
     )
     return damage_relations_by_type
 
@@ -163,24 +168,40 @@ def main():
     weather_boost_by_type_list = gather_all_weather_boosts_by_type(pokemon_type)
     damage_relations_by_type_list = gather_all_damage_relations(pokemon_type)
 
-    # """
-    # Create database table schema if tables don't already exist
-    # """
-    # pokemon_by_type_table = create_pokemon_by_type_table_schema()
-    # weather_boost_by_type_table = create_weather_boost_by_type_table_schema()
-    # damage_relations_by_type_table = create_damage_relations_by_type_table_schema()
-    # env.metadata_obj.create_all(env.engine)
+    """
+    Create database table schema if tables don't already exist
+    """
+    pokemon_by_type_table = create_pokemon_by_type_table_schema()
+    weather_boost_by_type_table = create_weather_boost_by_type_table_schema()
+    damage_relations_by_type_table = create_damage_relations_by_type_table_schema()
+    env.metadata_obj.create_all(env.engine)
 
-    # """
-    # Inserting new rows for every list of dictionaries create
-    # """
-    # insert_rows_to_table(pokemon_by_type_table, pokemon_by_types_list)
-    # insert_rows_to_table(weather_boost_by_type_table, weather_boost_by_type_list)
-    # insert_rows_to_table(damage_relations_by_type_table, damage_relations_by_type_list)
+    """
+    Check to see if first run data exists in database, if not insert
+    """
+    list_of_objects = [weather_boost_by_type_list, pokemon_by_types_list, damage_relations_by_type_list]
+    list_of_tables = [pokemon_by_type_table, weather_boost_by_type_table, damage_relations_by_type_table]
+    check_and_insert_rows(list_of_objects, list_of_tables)
 
+    """
+    Pull existing rows from table into a list of dictionaries
+    """
+    result_list_of_rows_for_pokemon_by_types_list = select_all_from_table(pokemon_by_type_table)
+    result_list_of_rows_for_weather_boost_by_type = select_all_from_table(weather_boost_by_type_table)
+    result_list_of_rows_for_damage_relations_by_type = select_all_from_table(damage_relations_by_type_table)
 
+    """
+    Create a unique list of dictionaries that do not already exist in the database
+    """
+    unique_list_of_pokemon_by_type_dicts = compare_dataframes(result_list_of_rows_for_pokemon_by_types_list, pokemon_by_types_list)
+    unique_list_of_weather_boost_by_type_dicts = compare_dataframes(result_list_of_rows_for_weather_boost_by_type, weather_boost_by_type_list)
+    unique_list_of_damage_relations_by_type_dicts = compare_dataframes(result_list_of_rows_for_damage_relations_by_type, damage_relations_by_type_list)
 
-
+    """
+    Check to see if there is data to add, and also if the data does not already exist
+    """
+    unique_list_of_objects = [unique_list_of_pokemon_by_type_dicts, unique_list_of_weather_boost_by_type_dicts, unique_list_of_damage_relations_by_type_dicts]
+    check_and_insert_rows(unique_list_of_objects, list_of_tables)
 
 
 if __name__ == "__main__":
