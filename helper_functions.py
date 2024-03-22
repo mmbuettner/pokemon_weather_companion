@@ -31,15 +31,13 @@ def check_and_insert_rows(list_of_objects, list_of_tables):
         for objects in list_of_objects:
             if objects:
                 key = list(objects[0].keys())[0]
-                print(key)
                 if key in table.columns:
                     try: 
                         insert_rows_to_table(table, objects)
+                        print(f"Inserted entry to {key} table")
                     except Exception:
-                        print("Data exists already in table!")
+                        print(f"Data exists already in {key} table!")
                         pass
-            else:
-                print("Nothing to add!")
 
 
 def select_all_from_table(table):
@@ -59,12 +57,12 @@ def select_all_from_table(table):
     
 
 def compare_dataframes(db_list, api_list):
-    print(f"Size of db_list: {len(db_list)} and Size of {len(api_list)}")
+    print(f"{len(db_list)} entries in DB and {len(api_list)} objects from API.")
     db_list_keys = {tuple(item.items()) for item in db_list}
     api_list_keys = {tuple(item.items()) for item in api_list}
 
     unique_keys = api_list_keys - db_list_keys
 
     unique_dicts = [dict(key_value_pairs) for key_value_pairs in unique_keys]
-    print(f"Size of {len(unique_dicts)}")
+    print(f"Quantity of new entries: {len(unique_dicts)}")
     return unique_dicts
