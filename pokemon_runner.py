@@ -1,8 +1,7 @@
 """
     Notes to work on tomorrow:
-        - Figure out a way to only add _NEW_ entries and not duplicate
-        entries without necessarily having a unique key
-        - General clean up with Enviroment object and check imports
+        - Look into how to refactor the structure of main
+        - How to optimize the new unique data entry 
 """
 
 from helper_functions import (
@@ -109,12 +108,30 @@ def gather_all_damage_relations(pokemon_type):
     damage_relations_by_type_list = []
     for type in pokemon_type.type_results:
         pokemon_info = load_pokemon_by_type_data(type.type_url)
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_to, type.type_name, 'double_damage_to')
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_to, type.type_name, 'half_damage_to')
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_to, type.type_name, 'no_damage_to')
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.double_damage_from, type.type_name, 'double_damage_from')
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.half_damage_from, type.type_name, 'half_damage_from')
-        add_damage_relations(damage_relations_by_type_list, pokemon_info.damage_relations.no_damage_from, type.type_name, 'no_damage_from')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.double_damage_to, 
+                             type.type_name, 
+                             'double_damage_to')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.half_damage_to, 
+                             type.type_name, 
+                             'half_damage_to')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.no_damage_to, 
+                             type.type_name, 
+                             'no_damage_to')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.double_damage_from, 
+                             type.type_name, 
+                             'double_damage_from')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.half_damage_from, 
+                             type.type_name, 
+                             'half_damage_from')
+        add_damage_relations(damage_relations_by_type_list, 
+                             pokemon_info.damage_relations.no_damage_from, 
+                             type.type_name, 
+                             'no_damage_from')
     return damage_relations_by_type_list
 
 
@@ -179,8 +196,10 @@ def main():
     """
     Check to see if first run data exists in database, if not insert
     """
-    list_of_objects = [weather_boost_by_type_list, pokemon_by_types_list, damage_relations_by_type_list]
-    list_of_tables = [pokemon_by_type_table, weather_boost_by_type_table, damage_relations_by_type_table]
+    list_of_objects = [weather_boost_by_type_list, pokemon_by_types_list, 
+                       damage_relations_by_type_list]
+    list_of_tables = [pokemon_by_type_table, weather_boost_by_type_table, 
+                      damage_relations_by_type_table]
     check_and_insert_rows(list_of_objects, list_of_tables)
 
     """
@@ -193,15 +212,21 @@ def main():
     """
     Create a unique list of dictionaries that do not already exist in the database
     """
-    unique_list_of_pokemon_by_type_dicts = compare_dataframes(result_list_of_rows_for_pokemon_by_types_list, pokemon_by_types_list)
-    unique_list_of_weather_boost_by_type_dicts = compare_dataframes(result_list_of_rows_for_weather_boost_by_type, weather_boost_by_type_list)
-    unique_list_of_damage_relations_by_type_dicts = compare_dataframes(result_list_of_rows_for_damage_relations_by_type, damage_relations_by_type_list)
+    unique_list_of_pokemon_by_type_dicts = compare_dataframes(result_list_of_rows_for_pokemon_by_types_list, 
+                                                              pokemon_by_types_list)
+    unique_list_of_weather_boost_by_type_dicts = compare_dataframes(result_list_of_rows_for_weather_boost_by_type, 
+                                                                    weather_boost_by_type_list)
+    unique_list_of_damage_relations_by_type_dicts = compare_dataframes(result_list_of_rows_for_damage_relations_by_type, 
+                                                                       damage_relations_by_type_list)
 
     """
     Check to see if there is data to add, and also if the data does not already exist
     """
-    unique_list_of_objects = [unique_list_of_pokemon_by_type_dicts, unique_list_of_weather_boost_by_type_dicts, unique_list_of_damage_relations_by_type_dicts]
-    check_and_insert_rows(unique_list_of_objects, list_of_tables)
+    unique_list_of_objects = [unique_list_of_pokemon_by_type_dicts, 
+                              unique_list_of_weather_boost_by_type_dicts, 
+                              unique_list_of_damage_relations_by_type_dicts]
+    check_and_insert_rows(unique_list_of_objects, 
+                          list_of_tables)
 
 
 if __name__ == "__main__":
