@@ -1,3 +1,9 @@
+from Enviroment import Enviroment
+from helper_functions import (
+    insert_rows_to_table,
+    db_select_query
+)
+
 from geopy.geocoders import Nominatim
 import requests
 from sqlalchemy import (
@@ -5,22 +11,17 @@ from sqlalchemy import (
     Column,
     String,
     Integer,
-    PrimaryKeyConstraint,
-    text
+    PrimaryKeyConstraint
 )
 
-from Enviroment import Enviroment
-from helper_functions import (
-    insert_rows_to_table
-)
 
 env = Enviroment()
 
+GEOPOSITION_TABLE_NAME = 'geoposition_keys'
 
 def create_geoposition_table():
-    geoposition_table_name = 'geoposition_keys'
     geoposition_table = Table(
-        geoposition_table_name,
+        GEOPOSITION_TABLE_NAME,
         env.metadata_obj,
         Column('city', String),
         Column('region', String),
@@ -76,9 +77,17 @@ def get_location_key():
     env.metadata_obj.create_all(env.engine)
 
     location_data = get_location()
-
-    query_bool, result = geoposition_query(location_data)
-    if query_bool == False:
+    sql_stmt = f"""
+        SELECT * FROM public.{GEOPOSITION_TABLE_NAME} 
+        WHERE (
+            city LIKE '{location_data['city']}'
+            AND region LIKE '{location_data['region']}'
+            AND country LIKE '{location_data['country']}'
+            AND postalcode = '{location_data['postalcode']}'
+        )
+    """
+    result = db_select_query(sql_stmt)
+    if not result:
         location_key = location_key_api_query()
         location_data['location_key'] = location_key
         insert_rows_to_table(geoposition_table,location_data)
@@ -88,37 +97,29 @@ def get_location_key():
     return location_key
 
 
-def geoposition_query(location_data):
-
-    with env.engine.connect() as conn:
-        query = text(f"""
-            SELECT * FROM public.geoposition_keys 
-            WHERE (
-                city LIKE '{location_data['city']}'
-                AND region LIKE '{location_data['region']}'
-                AND country LIKE '{location_data['country']}'
-                AND postalcode = '{location_data['postalcode']}'
-            )
-        """)
-        results = conn.execute(query)
-        rows = results.fetchall() if results.rowcount > 0 else ()
-
-    if not rows:
-        bool = False
-    else:
-        bool = True
-    
-    return bool, rows
-
-
 def get_weather_data():
     location_key = get_location_key()
-    response = requests.get(f"http://dataservice.accuweather.com/currentconditions/v1/{location_key}?apikey={env.weather_api_key}").json()
-    print(response)
+    response = requests.get(f"http://dataservice.accuweather.com/currentconditions/v1/{location_key}?apikey={env.weather_api_key}&details=true").json()
+    weather_dict = {
+        'weather' : response[0].get('WeatherText'),
+        'imperial_temp' : response[0].get('Temperature').get('Imperial').get('Value'),
+        'metric_temp' : response[0].get('Temperature').get('Metric').get('Value'),
+        'wind_mph' : response[0].get('Wind').get('Speed').get('Imperial').get('Value'),
+        'wind_gust_mph' : response[0].get('WindGust').get('Speed').get('Imperial').get('Value')
+    }
+    return weather_dict
 
+def weather_api():
+    location_dict = get_location()
+    weather_dict = get_weather_data()
+    weather_dict = {
+        'location' : location_dict,
+        'weather' : weather_dict
+    }
+    return weather_dict
 
 def main():
-    get_weather_data()
+    weather_api()
 
 
 if __name__ == "__main__":
