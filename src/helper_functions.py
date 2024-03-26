@@ -3,7 +3,8 @@ from Enviroment import Enviroment
 import requests
 import json
 from sqlalchemy import (
-    insert
+    insert,
+    text
 )
 
 env = Enviroment()
@@ -66,3 +67,13 @@ def compare_dataframes(db_list, api_list):
     unique_dicts = [dict(key_value_pairs) for key_value_pairs in unique_keys]
     print(f"Quantity of new entries: {len(unique_dicts)}")
     return unique_dicts
+
+
+def db_select_query(sql_stmt):
+
+    with env.engine.connect() as conn:
+        query = text(sql_stmt)
+        results = conn.execute(query)
+        rows = results.fetchall() if results.rowcount > 0 else ()
+
+    return rows

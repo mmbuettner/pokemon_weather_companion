@@ -4,15 +4,15 @@
         - How to optimize the new unique data entry 
 """
 
+from models.PokemonType import PokemonType
+from models.Pokemon import Pokemon
+from Enviroment import Enviroment
 from helper_functions import (
     api_request, 
     select_all_from_table,
     check_and_insert_rows,
     compare_dataframes
 )
-from models.PokemonType import PokemonType
-from models.Pokemon import Pokemon
-from Enviroment import Enviroment
 
 from sqlalchemy import (
     Table,
@@ -32,7 +32,7 @@ def load_pokemon_type_data():
     type_count = pokemon_type_reponse['count']
     type_results = pokemon_type_reponse['results']
     pokemon_type = PokemonType(type_count,type_results)
-    return pokemon_type
+    gather_all_pokemon_related_to_type(pokemon_type)
 
 
 def load_pokemon_by_type_data(url):
@@ -47,8 +47,8 @@ def load_pokemon_by_type_data(url):
 def gather_all_pokemon_related_to_type(pokemon_type):
     pokemon_by_types_list = []
     for type in pokemon_type.type_results:
-        pokemon_info = load_pokemon_by_type_data(type.type_url)
-        for pokemon in pokemon_info.pokemons:
+        pokemon_by_type_info = load_pokemon_by_type_data(type.type_url)
+        for pokemon in pokemon_by_type_info.pokemons:
             pokemon_by_type_dict = {
                 'pokemon' : pokemon.pokemon.pokemon_name,
                 'type' : type.type_name
