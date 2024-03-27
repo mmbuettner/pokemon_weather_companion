@@ -109,17 +109,17 @@ def get_weather_data():
     }
     return weather_dict
 
-def weather_api():
+def weather_dict():
     location_dict = get_location()
     weather_dict = get_weather_data()
-    weather_dict = {
+    loc_and_weather_dicts = {
         'location' : location_dict,
         'weather' : weather_dict
     }
-    return weather_dict
+    return loc_and_weather_dicts
 
 def main():
-    weather_api()
+    weather_dict()
 
 
 if __name__ == "__main__":

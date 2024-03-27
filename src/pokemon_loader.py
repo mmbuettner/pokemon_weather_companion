@@ -20,8 +20,6 @@ from sqlalchemy import (
     String,
     PrimaryKeyConstraint
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 
 env = Enviroment()
@@ -32,7 +30,7 @@ def load_pokemon_type_data():
     type_count = pokemon_type_reponse['count']
     type_results = pokemon_type_reponse['results']
     pokemon_type = PokemonType(type_count,type_results)
-    gather_all_pokemon_related_to_type(pokemon_type)
+    return pokemon_type
 
 
 def load_pokemon_by_type_data(url):
@@ -44,14 +42,27 @@ def load_pokemon_by_type_data(url):
     return pokemon_by_type
 
 
+def load_pokemon_sprite(url):
+    pokemon_sprite = api_request(url)
+    sprites = pokemon_sprite['sprites']['front_default']
+    return sprites
+
+
 def gather_all_pokemon_related_to_type(pokemon_type):
     pokemon_by_types_list = []
+    counter_type = 0
     for type in pokemon_type.type_results:
+        counter_type += 1
         pokemon_by_type_info = load_pokemon_by_type_data(type.type_url)
+        counter_pokemons = 0
         for pokemon in pokemon_by_type_info.pokemons:
+            counter_pokemons += 1
+            print(f"Working on pokemon {counter_pokemons} of {len(pokemon_by_type_info.pokemons)} in type {counter_type} of {len(pokemon_type.type_results)}")
+            pokemon_sprite = load_pokemon_sprite(pokemon.pokemon.pokemon_url)
             pokemon_by_type_dict = {
                 'pokemon' : pokemon.pokemon.pokemon_name,
-                'type' : type.type_name
+                'type' : type.type_name,
+                'sprite' : pokemon_sprite
             }
             pokemon_by_types_list.append(pokemon_by_type_dict)
     return pokemon_by_types_list
@@ -142,6 +153,7 @@ def create_pokemon_by_type_table_schema():
         env.metadata_obj,
         Column('pokemon', String),
         Column('type', String),
+        Column('sprite', String, nullable=True),
         PrimaryKeyConstraint('pokemon','type')
     )
     return pokemon_by_type

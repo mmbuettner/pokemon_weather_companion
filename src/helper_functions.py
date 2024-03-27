@@ -35,8 +35,8 @@ def check_and_insert_rows(list_of_objects, list_of_tables):
                 if key in table.columns:
                     try: 
                         insert_rows_to_table(table, objects)
-                        print(f"Inserted entry to {key} table")
-                    except Exception:
+                        print(f"Inserted entry to {key} table!")
+                    except Exception as e:
                         print(f"Data exists already in {key} table!")
                         pass
 
@@ -70,7 +70,6 @@ def compare_dataframes(db_list, api_list):
 
 
 def db_select_query(sql_stmt):
-
     with env.engine.connect() as conn:
         query = text(sql_stmt)
         results = conn.execute(query)
