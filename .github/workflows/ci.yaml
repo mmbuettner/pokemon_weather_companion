@@ -50,8 +50,8 @@ jobs:
           push: true
           tags: us-south1-docker.pkg.dev/pokemon-weather-companion/meike/pokemon-weather-companion:latest
           build-args: 
-            - postgres_local_password=$POSTGRES_LOCAL_PASSWORD,
-            - poke_go_pal_database_name=$POKE_GO_PAL_DATABASE_NAME,
+            - postgres_local_password=$POSTGRES_LOCAL_PASSWORD
+            - poke_go_pal_database_name=$POKE_GO_PAL_DATABASE_NAME
             - weather_api_key=$WEATHER_API_KEY
         
           
