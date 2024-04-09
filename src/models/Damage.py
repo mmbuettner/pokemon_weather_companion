@@ -1,4 +1,4 @@
 class Damage:
-    def __init__(self,name,url):
+    def __init__(self, name, url):
         self.name = name
         self.url = url

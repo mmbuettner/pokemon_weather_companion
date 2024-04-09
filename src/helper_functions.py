@@ -2,10 +2,7 @@ from Enviroment import Enviroment
 
 import requests
 import json
-from sqlalchemy import (
-    insert,
-    text
-)
+from sqlalchemy import insert, text
 
 env = Enviroment()
 
@@ -18,10 +15,7 @@ def api_request(url):
 
 def insert_rows_to_table(table, list_of_dicts):
     with env.engine.connect() as conn:
-        result = conn.execute(
-            insert(table),
-            list_of_dicts
-        )
+        result = conn.execute(insert(table), list_of_dicts)
         conn.commit()
 
     print(f"Added {len(list_of_dicts)} new entries.")
@@ -33,7 +27,7 @@ def check_and_insert_rows(list_of_objects, list_of_tables):
             if objects:
                 key = list(objects[0].keys())[0]
                 if key in table.columns:
-                    try: 
+                    try:
                         insert_rows_to_table(table, objects)
                         print(f"Inserted entry to {key} table!")
                     except Exception as e:
@@ -52,10 +46,10 @@ def select_all_from_table(table):
             for idx, column in enumerate(table.columns):
                 row_dict[column.name] = row[idx]
             result_list_of_rows.append(row_dict)
-        
+
         conn.close()
         return result_list_of_rows
-    
+
 
 def compare_dataframes(db_list, api_list):
     print(f"{len(db_list)} entries in DB and {len(api_list)} objects from API.")
