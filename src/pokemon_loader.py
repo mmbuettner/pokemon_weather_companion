@@ -21,25 +21,25 @@ env = Enviroment()
 
 
 def load_pokemon_type_data():
-    pokemon_type_reponse = api_request("https://pokeapi.co/api/v2/type/")
-    type_count = pokemon_type_reponse["count"]
-    type_results = pokemon_type_reponse["results"]
+    pokemon_type_reponse = api_request('https://pokeapi.co/api/v2/type/')
+    type_count = pokemon_type_reponse['count']
+    type_results = pokemon_type_reponse['results']
     pokemon_type = PokemonType(type_count, type_results)
     return pokemon_type
 
 
 def load_pokemon_by_type_data(url):
     pokemon_by_type_response = api_request(url)
-    damage_relations = pokemon_by_type_response["damage_relations"]
-    type_name = pokemon_by_type_response["name"]
-    pokemons = pokemon_by_type_response["pokemon"]
+    damage_relations = pokemon_by_type_response['damage_relations']
+    type_name = pokemon_by_type_response['name']
+    pokemons = pokemon_by_type_response['pokemon']
     pokemon_by_type = Pokemon(damage_relations, type_name, pokemons)
     return pokemon_by_type
 
 
 def load_pokemon_sprite(url):
     pokemon_sprite = api_request(url)
-    sprites = pokemon_sprite["sprites"]["front_default"]
+    sprites = pokemon_sprite['sprites']['front_default']
     return sprites
 
 
@@ -57,9 +57,9 @@ def gather_all_pokemon_related_to_type(pokemon_type):
             )
             pokemon_sprite = load_pokemon_sprite(pokemon.pokemon.pokemon_url)
             pokemon_by_type_dict = {
-                "pokemon": pokemon.pokemon.pokemon_name,
-                "type": type.type_name,
-                "sprite": pokemon_sprite,
+                'pokemon': pokemon.pokemon.pokemon_name,
+                'type': type.type_name,
+                'sprite': pokemon_sprite,
             }
             pokemon_by_types_list.append(pokemon_by_type_dict)
     return pokemon_by_types_list
@@ -67,26 +67,26 @@ def gather_all_pokemon_related_to_type(pokemon_type):
 
 def get_weather_condition(type_name):
     weather_conditions = {
-        "grass": "sunny",
-        "fire": "sunny",
-        "ground": "sunny",
-        "water": "rainy",
-        "electric": "rainy",
-        "bug": "rainy",
-        "normal": "partly cloudy",
-        "rock": "partly cloudy",
-        "fairy": "cloudy",
-        "fighting": "cloudy",
-        "poison": "cloudy",
-        "flying": "windy",
-        "dragon": "windy",
-        "psychic": "windy",
-        "ice": "snow",
-        "steel": "snow",
-        "dark": "fog",
-        "ghost": "fog",
+        'grass': 'sunny',
+        'fire': 'sunny',
+        'ground': 'sunny',
+        'water': 'rainy',
+        'electric': 'rainy',
+        'bug': 'rainy',
+        'normal': 'partly cloudy',
+        'rock': 'partly cloudy',
+        'fairy': 'cloudy',
+        'fighting': 'cloudy',
+        'poison': 'cloudy',
+        'flying': 'windy',
+        'dragon': 'windy',
+        'psychic': 'windy',
+        'ice': 'snow',
+        'steel': 'snow',
+        'dark': 'fog',
+        'ghost': 'fog',
     }
-    return weather_conditions.get(type_name, "none")
+    return weather_conditions.get(type_name, 'none')
 
 
 def gather_all_weather_boosts_by_type(pokemon_type):
@@ -94,8 +94,8 @@ def gather_all_weather_boosts_by_type(pokemon_type):
     for type in pokemon_type.type_results:
         weather_condition = get_weather_condition(type.type_name)
         weather_boost_by_type_dict = {
-            "weather_condition": weather_condition,
-            "type": type.type_name,
+            'weather_condition': weather_condition,
+            'type': type.type_name,
         }
         weather_boost_by_type_list.append(weather_boost_by_type_dict)
     return weather_boost_by_type_list
@@ -105,9 +105,9 @@ def add_damage_relations(damage_relations_list, damage_type, type_name, relation
     for damage_relation in damage_type:
         to_type = damage_relation.name
         damage_relations_by_type_dict = {
-            "damage_relation": relation_type,
-            "type": type_name,
-            "opponent": to_type,
+            'damage_relation': relation_type,
+            'type': type_name,
+            'opponent': to_type,
         }
         damage_relations_list.append(damage_relations_by_type_dict)
 
@@ -120,75 +120,75 @@ def gather_all_damage_relations(pokemon_type):
             damage_relations_by_type_list,
             pokemon_info.damage_relations.double_damage_to,
             type.type_name,
-            "double_damage_to",
+            'double_damage_to',
         )
         add_damage_relations(
             damage_relations_by_type_list,
             pokemon_info.damage_relations.half_damage_to,
             type.type_name,
-            "half_damage_to",
+            'half_damage_to',
         )
         add_damage_relations(
             damage_relations_by_type_list,
             pokemon_info.damage_relations.no_damage_to,
             type.type_name,
-            "no_damage_to",
+            'no_damage_to',
         )
         add_damage_relations(
             damage_relations_by_type_list,
             pokemon_info.damage_relations.double_damage_from,
             type.type_name,
-            "double_damage_from",
+            'double_damage_from',
         )
         add_damage_relations(
             damage_relations_by_type_list,
             pokemon_info.damage_relations.half_damage_from,
             type.type_name,
-            "half_damage_from",
+            'half_damage_from',
         )
         add_damage_relations(
             damage_relations_by_type_list,
             pokemon_info.damage_relations.no_damage_from,
             type.type_name,
-            "no_damage_from",
+            'no_damage_from',
         )
     return damage_relations_by_type_list
 
 
 def create_pokemon_by_type_table_schema():
-    pokemon_by_type_table_name = "pokemon_by_type"
+    pokemon_by_type_table_name = 'pokemon_by_type'
     pokemon_by_type = Table(
         pokemon_by_type_table_name,
         env.metadata_obj,
-        Column("pokemon", String),
-        Column("type", String),
-        Column("sprite", String, nullable=True),
-        PrimaryKeyConstraint("pokemon", "type"),
+        Column('pokemon', String),
+        Column('type', String),
+        Column('sprite', String, nullable=True),
+        PrimaryKeyConstraint('pokemon', 'type'),
     )
     return pokemon_by_type
 
 
 def create_weather_boost_by_type_table_schema():
-    weather_boost_by_type_table_name = "weather_boost_by_type"
+    weather_boost_by_type_table_name = 'weather_boost_by_type'
     weather_boost_by_type = Table(
         weather_boost_by_type_table_name,
         env.metadata_obj,
-        Column("weather_condition", String),
-        Column("type", String),
-        PrimaryKeyConstraint("weather_condition", "type"),
+        Column('weather_condition', String),
+        Column('type', String),
+        PrimaryKeyConstraint('weather_condition', 'type'),
     )
     return weather_boost_by_type
 
 
 def create_damage_relations_by_type_table_schema():
-    damage_relations_by_type_table_name = "damage_relations_by_type"
+    damage_relations_by_type_table_name = 'damage_relations_by_type'
     damage_relations_by_type = Table(
         damage_relations_by_type_table_name,
         env.metadata_obj,
-        Column("damage_relation", String),
-        Column("type", String),
-        Column("opponent", String),
-        PrimaryKeyConstraint("damage_relation", "type", "opponent"),
+        Column('damage_relation', String),
+        Column('type', String),
+        Column('opponent', String),
+        PrimaryKeyConstraint('damage_relation', 'type', 'opponent'),
     )
     return damage_relations_by_type
 
