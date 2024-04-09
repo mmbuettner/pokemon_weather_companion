@@ -1,23 +1,15 @@
 from Enviroment import Enviroment
-from helper_functions import (
-    insert_rows_to_table,
-    db_select_query
-)
+from helper_functions import insert_rows_to_table, db_select_query
 
 from geopy.geocoders import Nominatim
 import requests
-from sqlalchemy import (
-    Table,
-    Column,
-    String,
-    Integer,
-    PrimaryKeyConstraint
-)
+from sqlalchemy import Table, Column, String, Integer, PrimaryKeyConstraint
 
 
 env = Enviroment()
 
 GEOPOSITION_TABLE_NAME = 'geoposition_keys'
+
 
 def create_geoposition_table():
     geoposition_table = Table(
@@ -28,11 +20,7 @@ def create_geoposition_table():
         Column('country', String),
         Column('postalcode', Integer),
         Column('location_key', Integer),
-        PrimaryKeyConstraint('city',
-                             'region',
-                             'country',
-                             'postalcode',
-                             'location_key')
+        PrimaryKeyConstraint('city', 'region', 'country', 'postalcode', 'location_key'),
     )
     return geoposition_table
 
@@ -49,7 +37,7 @@ def get_location():
         'city': response.get('city'),
         'region': response.get('region'),
         'country': response.get('country'),
-        'postalcode': response.get('zip')
+        'postalcode': response.get('zip'),
     }
     print(f"{response}\n\n")
     return location_data
@@ -65,7 +53,9 @@ def get_lat_lon():
 
 def location_key_api_query():
     lat_lon = get_lat_lon()
-    response = requests.get(f"http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey={env.weather_api_key}&q={lat_lon}").json()
+    response = requests.get(
+        f"http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey={env.weather_api_key}&q={lat_lon}"
+    ).json()
     location_key = response.get('Key')
     print(f"{response}\n\n")
     return location_key
@@ -90,36 +80,41 @@ def get_location_key():
     if not result:
         location_key = location_key_api_query()
         location_data['location_key'] = location_key
-        insert_rows_to_table(geoposition_table,location_data)
-    else: 
+        insert_rows_to_table(geoposition_table, location_data)
+    else:
         location_key = result[0][-1]
-    
+
     return location_key
 
 
 def get_weather_data():
     location_key = get_location_key()
-    response = requests.get(f"http://dataservice.accuweather.com/currentconditions/v1/{location_key}?apikey={env.weather_api_key}&details=true").json()
+    response = requests.get(
+        f"http://dataservice.accuweather.com/currentconditions/v1/{location_key}?apikey={env.weather_api_key}&details=true"
+    ).json()
     weather_dict = {
-        'weather' : response[0].get('WeatherText'),
-        'imperial_temp' : response[0].get('Temperature').get('Imperial').get('Value'),
-        'metric_temp' : response[0].get('Temperature').get('Metric').get('Value'),
-        'wind_mph' : response[0].get('Wind').get('Speed').get('Imperial').get('Value'),
-        'wind_gust_mph' : response[0].get('WindGust').get('Speed').get('Imperial').get('Value')
+        'weather': response[0].get('WeatherText'),
+        'imperial_temp': response[0].get('Temperature').get('Imperial').get('Value'),
+        'metric_temp': response[0].get('Temperature').get('Metric').get('Value'),
+        'wind_mph': response[0].get('Wind').get('Speed').get('Imperial').get('Value'),
+        'wind_gust_mph': response[0]
+        .get('WindGust')
+        .get('Speed')
+        .get('Imperial')
+        .get('Value'),
     }
     return weather_dict
 
-def weather_api():
+
+def weather_dict():
     location_dict = get_location()
     weather_dict = get_weather_data()
-    weather_dict = {
-        'location' : location_dict,
-        'weather' : weather_dict
-    }
-    return weather_dict
+    loc_and_weather_dicts = {'location': location_dict, 'weather': weather_dict}
+    return loc_and_weather_dicts
+
 
 def main():
-    weather_api()
+    weather_dict()
 
 
 if __name__ == "__main__":

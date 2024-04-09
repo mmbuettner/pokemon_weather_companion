@@ -1,14 +1,19 @@
-from weather_runner import weather_api
+from pokemon_runner import pokemon_with_boosted_types
 
 from flask import Flask
 
 app = Flask(__name__)
 
+
 # Data API Route
 @app.route("/data")
 def data():
-    weather_data = weather_api()
-    return weather_data
 
-if __name__=="__main__":
-    app.run(debug=True)
+    pogo_weather_companion_json = pokemon_with_boosted_types()
+
+    return pogo_weather_companion_json
+
+
+if __name__ == "__main__":
+    app.json.sort_keys = False
+    app.run(host="0.0.0.0", port=8080 ,debug=True)

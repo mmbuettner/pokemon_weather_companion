@@ -1,9 +1,6 @@
 import os
 
-from sqlalchemy import (
-    create_engine,
-    MetaData
-)
+from sqlalchemy import create_engine, MetaData
 
 
 class Enviroment:
@@ -18,4 +15,3 @@ class Enviroment:
             raise RuntimeError("POSTGRES_LOCAL_PASSWORD is not set")
         if self.poke_go_pal_database_name is None:
             raise RuntimeError("POKE_GO_PAL_DATABASE_NAME not set")
-    
