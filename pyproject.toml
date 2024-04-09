@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pokemon-weather-companion"
+version = "0.1.0"
+description = "A tool that helps you use pokemon with the most damage based on weather boosts"
+authors = ["Meike Buettner <contact@meikembuettner.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^3.0.3"
+geopy = "^2.4.1"
+psycopg2-binary = "^2.9.9"
+requests = "^2.31.0"
+sqlalchemy = "^2.0.29"
+black = "^24.3.0"
+cloud-sql-python-connector = "^1.8.0"
+pg8000 = "^1.31.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
