@@ -4,3 +4,4 @@ psycopg2-binary==2.9.9
 requests==2.31.0
 SQLAlchemy==2.0.28
 black==24.3.0
+cloud-sql-python-connector==1.8.0
