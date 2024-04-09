@@ -21,8 +21,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           project_id: 'pokemon-weather-companion'
-          token_format: access_token
-          workload_identity_provider: 'projects/808521182590/locations/global/workloadIdentityPools/github-actions-wip/providers/github'
+          workload_identity_provider: 'projects/808521182590/locations/global/workloadIdentityPools/github/providers/meike'
 
       - name: Login to GAR
         uses: docker/login-action@v3
