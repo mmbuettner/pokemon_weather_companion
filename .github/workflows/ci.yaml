@@ -31,6 +31,7 @@ jobs:
           project_id: 'pokemon-weather-companion'
           token_format: access_token
           workload_identity_provider: 'projects/808521182590/locations/global/workloadIdentityPools/github/providers/meike'
+          service_account: 'pwc-sa@pokemon-weather-companion.iam.gserviceaccount.com'
 
       - name: Login to GAR
         uses: docker/login-action@v3
