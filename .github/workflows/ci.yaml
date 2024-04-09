@@ -42,6 +42,17 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v5
+        env: 
+          POSTGRES_LOCAL_PASSWORD: ${{ secrets.POSTGRES_LOCAL_PASSWORD }}
+          POKE_GO_PAL_DATABASE_NAME: ${{ secrets.POKE_GO_PAL_DATABASE_NAME }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
         with:
           push: true
           tags: us-south1-docker.pkg.dev/pokemon-weather-companion/meike/pokemon-weather-companion:latest
+          build-args: [
+            postgres_local_password=$POSTGRES_LOCAL_PASSWORD,
+            poke_go_pal_database_name=$POKE_GO_PAL_DATABASE_NAME,
+            weather_api_key=$WEATHER_API_KEY
+          ]
+        
+          
